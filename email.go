@@ -29,6 +29,7 @@ type MailService struct {
 type MailConfig struct {
 	PrimaryServer SMTPServer
 	BackupServer  SMTPServer
+	QueueSize     int
 }
 
 type EmailMessage struct {
@@ -39,11 +40,11 @@ type EmailMessage struct {
 
 var defaultActionTimeout = 10 * time.Second
 
-func NewMailService(config *MailConfig, logger *logger.Logger, queueSize int) *MailService {
+func NewMailService(config *MailConfig, logger *logger.Logger) *MailService {
 	return &MailService{
 		config:        config,
 		logger:        logger,
-		queue:         make(chan EmailMessage, queueSize),
+		queue:         make(chan EmailMessage, config.QueueSize),
 		actionTimeout: defaultActionTimeout,
 	}
 }
