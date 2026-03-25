@@ -3,10 +3,10 @@ package notification
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sync"
 	"time"
 
-	"github.com/restfront/logger"
 	simplemail "github.com/xhit/go-simple-mail/v2"
 )
 
@@ -19,7 +19,7 @@ type SMTPServer struct {
 
 type MailService struct {
 	config        *MailConfig
-	logger        *logger.Logger
+	logger        logger
 	queue         chan EmailMessage
 	actionTimeout time.Duration
 	closed        bool
@@ -40,7 +40,29 @@ type EmailMessage struct {
 
 var defaultActionTimeout = 10 * time.Second
 
-func NewMailService(config *MailConfig, logger *logger.Logger) *MailService {
+type logger interface {
+	Debugf(format string, v ...any)
+	Infof(format string, v ...any)
+	Info(format string)
+	Warnf(format string, v ...any)
+	Warn(format string)
+	Errorf(format string, v ...any)
+}
+
+type noOpLogger struct{}
+
+func (l *noOpLogger) Debugf(format string, v ...any) {}
+func (l *noOpLogger) Infof(format string, v ...any)  {}
+func (l *noOpLogger) Info(format string)             {}
+func (l *noOpLogger) Warnf(format string, v ...any)  {}
+func (l *noOpLogger) Warn(format string)             {}
+func (l *noOpLogger) Errorf(format string, v ...any) {}
+
+func NewMailService(config *MailConfig, logger logger) *MailService {
+	if isNilInterface(logger) {
+		logger = &noOpLogger{}
+	}
+
 	return &MailService{
 		config:        config,
 		logger:        logger,
@@ -196,4 +218,14 @@ func (s *MailService) Stop() {
 	s.closed = true
 	close(s.queue)
 	s.logger.Info("Сервис отправки email остановлен")
+}
+
+func isNilInterface(i any) bool {
+	if i == nil {
+		return true
+	}
+
+	v := reflect.ValueOf(i)
+
+	return v.Kind() == reflect.Ptr && v.IsNil()
 }
