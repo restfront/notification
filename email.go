@@ -43,9 +43,9 @@ var defaultActionTimeout = 10 * time.Second
 type logger interface {
 	Debugf(format string, v ...any)
 	Infof(format string, v ...any)
-	Info(format string)
+	Info(args ...any)
 	Warnf(format string, v ...any)
-	Warn(format string)
+	Warn(args ...any)
 	Errorf(format string, v ...any)
 }
 
@@ -53,9 +53,9 @@ type noOpLogger struct{}
 
 func (l *noOpLogger) Debugf(format string, v ...any) {}
 func (l *noOpLogger) Infof(format string, v ...any)  {}
-func (l *noOpLogger) Info(format string)             {}
+func (l *noOpLogger) Info(args ...any)               {}
 func (l *noOpLogger) Warnf(format string, v ...any)  {}
-func (l *noOpLogger) Warn(format string)             {}
+func (l *noOpLogger) Warn(args ...any)               {}
 func (l *noOpLogger) Errorf(format string, v ...any) {}
 
 func NewMailService(config *MailConfig, logger logger) *MailService {
